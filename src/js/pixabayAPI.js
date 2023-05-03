@@ -8,19 +8,6 @@ export class PixabayAPI {
   #per_page = 40;
   #totalPages = 0;
 
-  // getPopularPhotos(page) {
-  //   return axios.get(`${this.#BASE_URL}?key=${this.#API_KEY}`, {
-  //     params: {
-  //       q: 'random',
-  //       page: this.#page,
-  //       per_page: this.#per_page,
-  //       image_type: 'photo',
-  //       orientation: 'horizontal',
-  //       safesearch: true,
-  //     },
-  //   });
-  // }
-
   getPhotoByQuery(page) {
     return axios.get(`${this.#BASE_URL}?key=${this.#API_KEY}`, {
       params: {
@@ -52,5 +39,8 @@ export class PixabayAPI {
 
   setTotal(total) {
     this.#totalPages = total;
+  }
+  hasMorePhotos() {
+    return this.#page < Math.ceil(this.#totalPages / this.#per_page);
   }
 }

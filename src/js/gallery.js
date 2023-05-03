@@ -11,6 +11,7 @@ const gallery = document.querySelector('.gallery');
 const pixabayAPI = new PixabayAPI();
 const container = document.getElementById('tui-pagination-container');
 
+console.log(loadMoreBtn);
 const options = {
   totalItems: 0,
   itemsPerPage: 40,
@@ -23,26 +24,8 @@ const page = pagination.getCurrentPage();
 console.log('page', page);
 
 searchForm.addEventListener('submit', onSearchForm);
-loadMoreBtn.addEventListener('submit', onLoadMore);
+loadMoreBtn.addEventListener('click', onLoadMore);
 container.classList.add('is-hidden');
-
-// async function onRenderPage(page) {
-//   try {
-//     const respons = await pixabayAPI.getPopularPhotos(page);
-
-//     if (respons.data.hits.length === 0) {
-//       loadMoreBtn.classList.remove('is-hidden');
-//       return;
-//     }
-
-//     gallery.innerHTML = createGalleryCards(respons.data.hits);
-//     loadMoreBtn.classList.remove('is-hidden');
-
-//     pagination.reset(respons.data.total);
-//   } catch (error) {
-//     console.log(error);
-//   }
-// }
 
 async function createByQueryPogination(event) {
   try {
@@ -102,11 +85,11 @@ async function onLoadMore(event) {
   //   Notify.info("We're sorry, but you've reached the end of search results.");
   //   notifyInit;
   // }
-const lastPage 
 
   try {
     const currentPage = event.page;
     console.log('current page', currentPage);
+    console.log(event);
     const respons = await pixabayAPI.getPopularPhotos(currentPage);
     gallery.innerHTML = createGalleryCards(respons.data.hits);
   } catch (error) {
@@ -133,6 +116,7 @@ const lastPage
 // ____ пошук по запиту ____
 
 function clearPage() {
+  pixabayAPI.resetPage();
   gallery.innerHTML = '';
   loadMoreBtn.classList.add('is-hidden');
 }
