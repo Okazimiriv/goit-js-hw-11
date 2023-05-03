@@ -8,15 +8,16 @@ const searchBtn = document.querySelector('.search-btn');
 const loadMoreBtn = document.querySelector('.load-more');
 const searchForm = document.querySelector('.js-search-form');
 const gallery = document.querySelector('.gallery');
+
 const pixabayAPI = new PixabayAPI();
 const container = document.getElementById('tui-pagination-container');
 
-console.log(loadMoreBtn);
 const options = {
   totalItems: 0,
   itemsPerPage: 40,
   visiblePages: 5,
   page: 1,
+  total: 0,
 };
 const pagination = new Pagination(container, options);
 
@@ -27,26 +28,25 @@ searchForm.addEventListener('submit', onSearchForm);
 loadMoreBtn.addEventListener('click', onLoadMore);
 container.classList.add('is-hidden');
 
-async function createByQueryPogination(event) {
-  try {
-    const currentPage = event.page;
-    console.log('current page', currentPage);
-    const respons = await pixabayAPI.getPhotoByQuery(currentPage);
-    gallery.innerHTML = createGalleryCards(respons.data.hits);
-  } catch (error) {
-    console.log(error);
-  }
-}
+// async function createByQueryPogination(event) {
+//   try {
+//     const currentPage = event.page;
+//     console.log('current page', currentPage);
+//     const respons = await pixabayAPI.getPhotoByQuery(currentPage);
+//     gallery.innerHTML = createGalleryCards(respons.data.hits);
+//   } catch (error) {
+//     console.log(error);
+//   }
+// }
 
 async function onSearchForm(event) {
   event.preventDefault();
-
+  console.log(event);
   const searchQuery = event.currentTarget.elements['user-search-query'].value
     .trim()
     .toLowerCase();
-  console.log(searchQuery);
+  console.log('searchQuery', searchQuery);
   pixabayAPI.query = searchQuery;
-  // loadMoreBtn.classList.remove('is-hidden');
   if (!searchQuery) {
     clearPage();
     return Notify.warning(
@@ -58,20 +58,23 @@ async function onSearchForm(event) {
     const respons = await pixabayAPI.getPhotoByQuery(page);
     if (respons.data.hits.length === 0) {
       clearPage();
-      // container.classList.add('is-hidden');
       return Notify.failure('Bad request. Please try again.');
     }
     if (respons.data.hits.length < options.itemsPerPage) {
       loadMoreBtn.classList.add('is-hidden');
-      gallery.innerHTML = createGalleryCards(respons.data.hits);
       return Notify.info(
         'We are sorry, but you have reached the end of search results.'
       );
     }
-    gallery.innerHTML = createGalleryCards(respons.data.hits);
+
+    console.log(options.total);
     loadMoreBtn.classList.remove('is-hidden');
-    //   console.log(respons.data);
-    //   pagination.reset(respons.data.total);
+    const markup = createGalleryCards(respons.data.hits);
+    gallery.insertAdjacentHTML('beforeend', markup);
+
+    // pixabayAPI.setTotal(options.total);
+    // Notify.success(`Hooray! We found ${total} images.`);
+    // gallery.refresh();
   } catch (error) {
     console.log(error);
   }
