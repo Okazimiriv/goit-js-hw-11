@@ -1,125 +1,142 @@
 import createGalleryCards from './tamplates/gallery-card.hbs';
 import { PixabayAPI } from './pixabayAPI';
-import Pagination from 'tui-pagination';
-import 'tui-pagination/dist/tui-pagination.css';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
 
-const searchBtn = document.querySelector('.search-btn');
 const loadMoreBtn = document.querySelector('.load-more');
 const searchForm = document.querySelector('.js-search-form');
-const gallery = document.querySelector('.gallery');
+const galleryEl = document.querySelector('.gallery');
 
 const pixabayAPI = new PixabayAPI();
-const container = document.getElementById('tui-pagination-container');
+
+// const options = {
+//   totalItems: 0,
+//   perPage: 40,
+//   visiblePages: 5,
+//   page: 1,
+//   total: 0,
+// };
+
+const perPage = 40;
+let totalPage = 0;
+let page = 1;
+
+let gallery = new SimpleLightbox('.gallery a', {
+  captionsData: 'alt',
+  captionDelay: 250,
+});
 
 const options = {
-  totalItems: 0,
-  itemsPerPage: 40,
-  visiblePages: 5,
-  page: 1,
-  total: 0,
+  root: null,
+  rootMargin: '200px',
+  threshold: 1.0,
 };
-const pagination = new Pagination(container, options);
-
-const page = pagination.getCurrentPage();
-console.log('page', page);
 
 searchForm.addEventListener('submit', onSearchForm);
-loadMoreBtn.addEventListener('click', onLoadMore);
-container.classList.add('is-hidden');
+// loadMoreBtn.addEventListener('click', onLoadMore);
 
-// async function createByQueryPogination(event) {
-//   try {
-//     const currentPage = event.page;
-//     console.log('current page', currentPage);
-//     const respons = await pixabayAPI.getPhotoByQuery(currentPage);
-//     gallery.innerHTML = createGalleryCards(respons.data.hits);
-//   } catch (error) {
-//     console.log(error);
-//   }
-// }
+const loadMorePhotos = async function (entries, observer) {
+  console.log(entries[0].isIntersecting);
+  try {
+    if (entries[0].isIntersecting) {
+      page += 1;
+      observer.disconnect();
+      const respons = await pixabayAPI.getPhotoByQuery(page);
+      galleryEl.insertAdjacentHTML(
+        'beforeend',
+        createGalleryCards(respons.data.hits)
+      );
+      observer.observe(galleryEl.lastElementChild);
+      console.log(page, totalPage);
+      if (page === totalPage) {
+        Report.failure(
+          "We're sorry, but you've reached the end of search results."
+        );
+        // btnEl.classList.add('is-hidden');
+        observer.disconnect();
+        return;
+      }
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+const observer = new IntersectionObserver(loadMorePhotos, options);
 
 async function onSearchForm(event) {
   event.preventDefault();
-  console.log(event);
-  const searchQuery = event.currentTarget.elements['user-search-query'].value
+  const searchQuery = event.currentTarget.elements['searchQuery'].value
     .trim()
     .toLowerCase();
-  console.log('searchQuery', searchQuery);
+
   pixabayAPI.query = searchQuery;
+
   if (!searchQuery) {
     clearPage();
     return Notify.warning(
       'Sorry, there are no images matching your search query.'
     );
   }
-
+  page = 1;
   try {
-    const respons = await pixabayAPI.getPhotoByQuery(page);
+    const respons = await pixabayAPI.getPhotoByQuery(page, perPage);
+
     if (respons.data.hits.length === 0) {
       clearPage();
       return Notify.failure('Bad request. Please try again.');
+    } else {
+      Notify.info(`Hooray! We found ${respons.data.totalHits} images.`);
     }
-    if (respons.data.hits.length < options.itemsPerPage) {
+    if (respons.data.hits.length < perPage) {
       loadMoreBtn.classList.add('is-hidden');
-      return Notify.info(
-        'We are sorry, but you have reached the end of search results.'
+      return galleryEl.insertAdjacentHTML(
+        'beforeend',
+        createGalleryCards(respons.data.hits)
       );
     }
+    totalPage = Math.ceil(respons.data.totalHits / perPage);
+    console.log('totalPage', totalPage);
 
-    console.log(options.total);
     loadMoreBtn.classList.remove('is-hidden');
-    const markup = createGalleryCards(respons.data.hits);
-    gallery.insertAdjacentHTML('beforeend', markup);
 
-    // pixabayAPI.setTotal(options.total);
-    // Notify.success(`Hooray! We found ${total} images.`);
-    // gallery.refresh();
+    galleryEl.insertAdjacentHTML(
+      'beforeend',
+      createGalleryCards(respons.data.hits)
+    );
+    observer.observe(galleryEl.lastElementChild);
+    gallery.refresh();
   } catch (error) {
     console.log(error);
   }
 }
 
-async function onLoadMore(event) {
-  // pixaby.incrementPage();
-
-  // if (!pixaby.hasMorePhotos) {
-  //   loadMoreBtn.classList.remove('is-hidden');
-  //   Notify.info("We're sorry, but you've reached the end of search results.");
-  //   notifyInit;
-  // }
-
-  try {
-    const currentPage = event.page;
-    console.log('current page', currentPage);
-    console.log(event);
-    const respons = await pixabayAPI.getPopularPhotos(currentPage);
-    gallery.innerHTML = createGalleryCards(respons.data.hits);
-  } catch (error) {
-    Notify.failure('Something went wrong!');
-
-    clearPage();
-  }
-}
-
-// async function createPopularPogination(event) {
+// async function onLoadMore() {
+//   console.log('onLoadMore');
 //   try {
-//     const currentPage = event.page;
-//     console.log('current page', currentPage);
-//     const respons = await pixabayAPI.getPopularPhotos(currentPage);
-//     gallery.innerHTML = createGalleryCards(respons.data.hits);
+//     page += 1;
+//     const response = await pixabayAPI.getPhotoByQuery(page);
+
+//     const markup = createGalleryCards(respons.data.hits);
+//     galleryEl.insertAdjacentHTML('beforeend', markup);
+
+//     galleryEl.refresh();
+//     console.log('page', page);
+//     console.log('totalPage', totalPage);
+//     if (page === totalPage) {
+//       return Notify.info(
+//         'We are sorry, but you have reached the end of search results.'
+//       );
+//     }
 //   } catch (error) {
-//     console.log(error);
+//     Notify.failure('Something went wrong!');
+
+//     clearPage();
 //   }
 // }
 
-// pagination.on('afterMove', createPopularPogination);
-// onRenderPage();
-
-// ____ пошук по запиту ____
-
 function clearPage() {
-  pixabayAPI.resetPage();
-  gallery.innerHTML = '';
+  // pixabayAPI.resetPage();
+  galleryEl.innerHTML = '';
   loadMoreBtn.classList.add('is-hidden');
 }

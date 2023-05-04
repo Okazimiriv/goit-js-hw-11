@@ -29,18 +29,18 @@ export class PixabayAPI {
     this.#query = newQuery;
   }
 
-  incrementPage() {
-    this.#page += 1;
-  }
+  // incrementPage() {
+  //   this.#page += 1;
+  // }
 
-  resetPage() {
-    this.#page = 1;
-  }
+  // resetPage() {
+  //   this.#page = 1;
+  // }
 
-  setTotal(total) {
-    this.#totalPages = total;
-  }
-  hasMorePhotos() {
-    return this.#page < Math.ceil(this.#totalPages / this.#per_page);
-  }
+  // setTotal(total) {
+  //   this.#totalPages = total;
+  // }
+  // hasMorePhotos() {
+  //   return this.#page < Math.ceil(this.#totalPages / this.#per_page);
+  // }
 }
