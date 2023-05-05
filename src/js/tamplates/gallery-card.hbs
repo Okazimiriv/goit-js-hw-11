@@ -1,12 +1,10 @@
 {{#each this}}
-{{!-- <li class='gallery__item'>
-  <img src='{{urls.small}}' alt='{{alt_description}}' class='gallery-img' />
-</li> --}}
 
-<a href='${largeImageURL}' class="card-link js-card-link"></a>
 <div class='photo-card'> 
-  <div class='gallery__item'>   
+  <div class='gallery__item'> 
+    <a href={{largeImageURL}} class='card-link js-card-link'> 
     <img src='{{webformatURL}}' alt='{{tags}}' loading='lazy' class='gallery-img' />   
+    </a>
     <div class="info">
       <p class="info-item">
         <b>Likes</b>{{likes}}
