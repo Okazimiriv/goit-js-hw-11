@@ -10,9 +10,6 @@ const galleryEl = document.querySelector('.gallery');
 
 const pixabayAPI = new PixabayAPI();
 
-// const perPage = 40;
-// let totalPage = 0;
-
 const gallery = new SimpleLightbox('.gallery a', {
   captionsData: 'alt',
   captionDelay: 250,
@@ -26,7 +23,6 @@ const options = {
 };
 
 searchForm.addEventListener('submit', onSearchForm);
-// loadMoreBtn.addEventListener('click', onLoadMore);
 
 const loadMorePhotos = async function (entries, observer) {
   try {
@@ -46,9 +42,12 @@ const loadMorePhotos = async function (entries, observer) {
 
       if (pixabayAPI.page === lastPage) {
         Notify.success(
-          "We're sorry, but you've reached the end of search results."
+          'We are sorry, but you have reached the end of search results.',
+          {
+            timeout: 5000,
+            width: '400px',
+          }
         );
-
         observer.disconnect();
         return;
       }
@@ -72,7 +71,11 @@ async function onSearchForm(event) {
   if (!searchQuery) {
     clearPage();
     return Notify.warning(
-      'Sorry, there are no images matching your search query.'
+      'Sorry, there are no images matching your search query.',
+      {
+        timeout: 5000,
+        width: '400px',
+      }
     );
   }
 
@@ -81,9 +84,15 @@ async function onSearchForm(event) {
 
     if (respons.data.hits.length === 0) {
       clearPage();
-      return Notify.failure('Bad request. Please try again.');
+      return Notify.failure('Bad request. Please try again.', {
+        timeout: 5000,
+        width: '400px',
+      });
     } else {
-      Notify.info(`Hooray! We found ${respons.data.totalHits} images.`);
+      Notify.info(`Hooray! We found ${respons.data.totalHits} images.`, {
+        timeout: 5000,
+        width: '400px',
+      });
     }
     if (respons.data.hits.length < pixabayAPI.per_page) {
       loadMoreBtn.classList.add('is-hidden');
