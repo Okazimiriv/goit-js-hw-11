@@ -16,6 +16,7 @@ const pixabayAPI = new PixabayAPI();
 const gallery = new SimpleLightbox('.gallery a', {
   captionsData: 'alt',
   captionDelay: 250,
+  close: false,
 });
 
 const options = {
