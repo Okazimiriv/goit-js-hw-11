@@ -20,9 +20,8 @@ const pixabayAPI = new PixabayAPI();
 
 const perPage = 40;
 let totalPage = 0;
-let page = 1;
 
-let gallery = new SimpleLightbox('.gallery a', {
+const gallery = new SimpleLightbox('.gallery a', {
   captionsData: 'alt',
   captionDelay: 250,
 });
@@ -37,10 +36,9 @@ searchForm.addEventListener('submit', onSearchForm);
 // loadMoreBtn.addEventListener('click', onLoadMore);
 
 const loadMorePhotos = async function (entries, observer) {
-  console.log(entries[0].isIntersecting);
   try {
     if (entries[0].isIntersecting) {
-      page += 1;
+      pixabayAPI.page += 1;
       observer.disconnect();
       const respons = await pixabayAPI.getPhotoByQuery(page);
       galleryEl.insertAdjacentHTML(
@@ -48,7 +46,7 @@ const loadMorePhotos = async function (entries, observer) {
         createGalleryCards(respons.data.hits)
       );
       observer.observe(galleryEl.lastElementChild);
-      console.log(page, totalPage);
+
       if (page === totalPage) {
         Report.failure(
           "We're sorry, but you've reached the end of search results."
@@ -66,6 +64,7 @@ const observer = new IntersectionObserver(loadMorePhotos, options);
 
 async function onSearchForm(event) {
   event.preventDefault();
+  pixabayAPI.page = 1;
   const searchQuery = event.currentTarget.elements['searchQuery'].value
     .trim()
     .toLowerCase();
@@ -90,15 +89,19 @@ async function onSearchForm(event) {
     }
     if (respons.data.hits.length < perPage) {
       loadMoreBtn.classList.add('is-hidden');
-      return galleryEl.insertAdjacentHTML(
+
+      galleryEl.insertAdjacentHTML(
         'beforeend',
         createGalleryCards(respons.data.hits)
       );
+      gallery.refresh();
+      return;
     }
     totalPage = Math.ceil(respons.data.totalHits / perPage);
     console.log('totalPage', totalPage);
 
     loadMoreBtn.classList.remove('is-hidden');
+    clearPage();
 
     galleryEl.insertAdjacentHTML(
       'beforeend',

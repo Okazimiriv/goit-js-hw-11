@@ -6,9 +6,8 @@ export class PixabayAPI {
   #query = '';
   #page = 1;
   #per_page = 40;
-  #totalPages = 0;
 
-  getPhotoByQuery(page) {
+  getPhotoByQuery() {
     return axios.get(`${this.#BASE_URL}?key=${this.#API_KEY}`, {
       params: {
         q: this.#query,
@@ -16,7 +15,6 @@ export class PixabayAPI {
         per_page: this.#per_page,
         image_type: 'photo',
         orientation: 'horizontal',
-        safesearch: true,
       },
     });
   }
